@@ -309,7 +309,25 @@ def to_excel(dfs: dict) -> bytes:
 st.title("📚 ¿Dónde publicar mi investigación?")
 st.caption("Bases: Scopus Source List (Mar. 2026) + SCImago Journal Rank 2025 · IA gratuita vía OpenRouter con fallback entre modelos")
 
-# Datos
+# Datos: si no existe la carpeta data/, se extrae del zip del repositorio (revistas-app.zip)
+def extraer_de_zip():
+    import zipfile
+    for z in list(Path(".").glob("*.zip")):
+        try:
+            with zipfile.ZipFile(z) as zf:
+                for n in zf.namelist():
+                    if n.endswith("revistas_procesadas.csv.gz"):
+                        DATA_FILE.parent.mkdir(exist_ok=True)
+                        DATA_FILE.write_bytes(zf.read(n))
+                        return True
+        except Exception:
+            continue
+    return False
+
+
+if not DATA_FILE.exists():
+    extraer_de_zip()
+
 if not DATA_FILE.exists():
     st.warning("No se encontró `data/revistas_procesadas.csv.gz`. Sube tus dos archivos para generarlo.")
     up1 = st.file_uploader("Scopus Source List (.xlsx)", type="xlsx")
